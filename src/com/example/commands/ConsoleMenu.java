@@ -3,6 +3,8 @@ package com.example.commands;
 import com.example.taxopark.Taxopark;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ConsoleMenu {
@@ -17,61 +19,77 @@ public class ConsoleMenu {
         Command searchAuto = new TaxoparkSearchAuto(tp);
         Command totalCost = new TaxoparkShowCost(tp);
 
-        ConsoleMenuExecutor myConsoleMenuExecutor = new ConsoleMenuExecutor();
-        myConsoleMenuExecutor.register("create", create);
-        myConsoleMenuExecutor.register("addAuto", addAuto);
-        myConsoleMenuExecutor.register("delAuto", removeAuto);
-        myConsoleMenuExecutor.register("showList", showList);
-        myConsoleMenuExecutor.register("sortList", sortList);
-        myConsoleMenuExecutor.register("searchAuto", searchAuto);
-        myConsoleMenuExecutor.register("totalCost", totalCost);
+        ConsoleMenuExecutor adminConsoleMenuExecutor = new ConsoleMenuExecutor();
+        adminConsoleMenuExecutor.register("create", create, "створити таксопарк.");
+        adminConsoleMenuExecutor.register("addAuto", addAuto, "додати автомобіль.");
+        adminConsoleMenuExecutor.register("delAuto", removeAuto, "вилучити автомобіль.");
+        adminConsoleMenuExecutor.register("showList", showList, "показати список автомобілів.");
+        adminConsoleMenuExecutor.register("sortList", sortList, "відсортувати автомобілі за зростанням витрати пального.");
+        adminConsoleMenuExecutor.register("searchAuto", searchAuto, "знайти автомобіль.");
+        adminConsoleMenuExecutor.register("totalCost", totalCost, "показати вартість таксопарку.");
 
-        boolean commandInterface = false;
+        ConsoleMenuExecutor userConsoleMenuExecutor = new ConsoleMenuExecutor();
+        userConsoleMenuExecutor.register("showList", showList, "показати список автомобілів.");
+        userConsoleMenuExecutor.register("sortList", sortList, "відсортувати автомобілі за зростанням витрати пального.");
+        userConsoleMenuExecutor.register("searchAuto", searchAuto, "знайти автомобіль.");
+        userConsoleMenuExecutor.register("totalCost", totalCost, "показати вартість таксопарку.");
+
+        while (true) {
+            Scanner sc = new Scanner(System.in);
+            System.out.println("Введіть логін:");
+            String login = sc.next();
+            switch (login) {
+                case "admin":
+                    runMenu(login, adminConsoleMenuExecutor);
+                    break;
+                case "user":
+                    runMenu(login, userConsoleMenuExecutor);
+                    break;
+                default:
+                    System.out.println("Неправильний логін.\n");
+            }
+        }
+    }
+
+    private static void runMenu(String login, ConsoleMenuExecutor adminConsoleMenuExecutor) {
+        boolean commandInterface = login.equals("admin");
+
+        HashMap<String, String> nameMap = adminConsoleMenuExecutor.getNameMap();
+        int k = 0;
+        HashMap<Integer, String> menu = new HashMap<Integer, String>();
+        HashMap<Integer, String> commands = new HashMap<Integer, String>();
+        for(Map.Entry<String, String> pair : nameMap.entrySet()) {
+            String commandName = pair.getKey();
+            String menuName = pair.getValue();
+            k++;
+            menu.put(k, menuName);
+            commands.put(k, commandName);
+        }
 
         while (true) {
             Scanner sc = new Scanner(System.in);
             if(!commandInterface) {
                 System.out.println("Виберіть дію:");
-                System.out.println("\t1 - створити таксопарк.");
-                System.out.println("\t2 - додати автомобіль.");
-                System.out.println("\t3 - вилучити автомобіль.");
-                System.out.println("\t4 - показати список автомобілів.");
-                System.out.println("\t5 - показати вартість таксопарку.");
-                System.out.println("\t6 - відсортувати автомобілі за зростанням витрати пального.");
-                System.out.println("\t7 - знайти автомобіль.");
+                for(Map.Entry<Integer, String> pair : menu.entrySet()) {
+                    System.out.println("\t" + pair.getKey() + " - " + pair.getValue());
+                }
                 System.out.println("\t8 - перейти у командний інтерфейс.");
-                System.out.println("\t9- закінчити роботу.");
+                System.out.println("\t9 - вийти із системи.");
                 int choice = sc.nextInt();
 
                 switch (choice) {
                     case 9:
                         return;
-                    case 1:
-                        myConsoleMenuExecutor.execute("create");
-                        break;
-                    case 2:
-                        myConsoleMenuExecutor.execute("addAuto");
-                        break;
-                    case 3:
-                        myConsoleMenuExecutor.execute("delAuto");
-                        break;
-                    case 4:
-                        myConsoleMenuExecutor.execute("showList");
-                        break;
-                    case 5:
-                        myConsoleMenuExecutor.execute("totalCost");
-                        break;
-                    case 6:
-                        myConsoleMenuExecutor.execute("sortList");
-                        break;
-                    case 7:
-                        myConsoleMenuExecutor.execute("searchAuto");
-                        break;
                     case 8:
                         commandInterface = true;
                         break;
                     default:
-                        System.out.println("Необхідно ввести 1-9 варіанти\n");
+                        if(menu.containsKey((Integer)choice)) {
+                            adminConsoleMenuExecutor.execute(commands.get((Integer) choice));
+                        }
+                        else {
+                            System.out.println("Необхідно ввести 1-9 варіанти\n");
+                        }
                 }
             }
             else {
@@ -90,8 +108,8 @@ public class ConsoleMenu {
                         commandInterface = false;
                         break;
                     case "help":
-                        ArrayList<String> commands = myConsoleMenuExecutor.availableCommands();
-                        for(String cmd: commands) {
+                        ArrayList<String> arCommands = adminConsoleMenuExecutor.availableCommands();
+                        for(String cmd: arCommands) {
                             System.out.println(cmd);
                         }
                         System.out.println("menu");
@@ -99,7 +117,7 @@ public class ConsoleMenu {
                         System.out.println("exit");
                         break;
                     default:
-                        myConsoleMenuExecutor.execute(command, parameters);
+                        adminConsoleMenuExecutor.execute(command, parameters);
                 }
             }
         }

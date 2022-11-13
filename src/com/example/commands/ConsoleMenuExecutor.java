@@ -5,9 +5,12 @@ import java.util.HashMap;
 
 public class ConsoleMenuExecutor {
     private final HashMap<String, Command> commandMap = new HashMap<>();
-    public void register(String commandName, Command command) {
+    private final HashMap<String, String> nameMap = new HashMap<>();
+    public void register(String commandName, Command command, String menuName) {
         commandMap.put(commandName, command);
+        nameMap.put(commandName, menuName);
     }
+
     public void execute(String commandName) {
         Command command = commandMap.get(commandName);
         if (command == null) {
@@ -31,5 +34,9 @@ public class ConsoleMenuExecutor {
        ArrayList<String> commands = new ArrayList<String>();
        commands.addAll(commandMap.keySet());
        return commands;
+    }
+
+    public HashMap<String, String> getNameMap() {
+        return nameMap;
     }
 }
